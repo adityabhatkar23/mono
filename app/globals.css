@@ -1,0 +1,23 @@
+@layer theme, base, clerk, components, utilities;
+@import "tailwindcss";
+
+.cl-formFieldInput {
+  background-color: #000000 !important;
+  background: #000000 !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-bottom: 1px solid #262626 !important;
+  color: #ffffff !important;
+}
+
+.cl-formFieldInput::placeholder {
+  color: #525252 !important;
+  opacity: 1 !important;
+}
+
+.cl-formFieldInput:-webkit-autofill,
+.cl-formFieldInput:-webkit-autofill:hover,
+.cl-formFieldInput:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #000000 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
