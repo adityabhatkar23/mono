@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
       }}
     >
       <html lang="en">
-        <body style={{ background: "#000" }}>{children}</body>
+        <body style={{ background: "#000", color: "#fff" }}>{children}</body>
       </html>
     </ClerkProvider>
   );

@@ -1,26 +1,27 @@
 import React from "react";
 import { ArrowUpRight, ArrowRight, CornerDownRight, Command } from "lucide-react";
+import Link from "next/link";
 
 export default function MonoLandingRefined() {
   return (
     <div className="flex min-h-screen flex-col justify-between bg-black p-8 font-sans text-white antialiased selection:bg-white selection:text-black md:p-16">
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between">
-        <a href="/" className="group flex items-center gap-3.5 focus:outline-none">
+        <Link href="/" className="group flex items-center gap-3.5 focus:outline-none">
           <div className="flex h-7 w-7 items-center justify-center border border-white transition-colors duration-200 group-hover:bg-white group-hover:text-black">
             <ArrowUpRight size={15} strokeWidth={1.5} />
           </div>
           <span className="text-xs font-light tracking-[0.4em] uppercase">Mono</span>
-        </a>
+        </Link>
         <div className="flex items-center gap-8 text-[11px] font-light tracking-[0.2em] uppercase">
-          <a href="/sign-in" className="opacity-100 transition-opacity hover:opacity-80">
+          <Link href="/sign-in" className="opacity-100 transition-opacity hover:opacity-80">
             Login
-          </a>
-          <a
+          </Link>
+          <Link
             href="/sign-up"
             className="border border-white px-4 py-1.5 transition-all hover:bg-white hover:text-black"
           >
             Join
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -32,8 +33,8 @@ export default function MonoLandingRefined() {
               <span className="font-semibold">structural noise.</span>
             </h1>
             <p className="max-w-sm text-[11px] leading-relaxed font-light tracking-[0.08em] uppercase">
-              A single link hub built entirely in pitch black and stark white. No colorful canvases,
-              no analytical profiling. Just bare, functional redirection.
+              Link single link hub built entirely in pitch black and stark white. No colorful
+              canvases, no analytical profiling. Just bare, functional redirection.
             </p>
           </div>
 
@@ -86,14 +87,14 @@ export default function MonoLandingRefined() {
           <span className="text-white">Mono</span>
           <span className="text-white">minimal link ecosystem</span>
         </div>
-        <a
+        <Link
           href="https://adityabhatkar.dev"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-white"
         >
           <span>made by aditya ❤︎⁠</span>
-        </a>
+        </Link>
       </footer>
     </div>
   );

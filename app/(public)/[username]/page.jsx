@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabaseClient.js";
+import Link from "next/link";
+import Image from "next/image";
 
 export default async function ProfilePage({ params }) {
   const { username } = await params;
@@ -22,7 +24,7 @@ export default async function ProfilePage({ params }) {
     <main className="min-h-screen bg-black text-white">
       <div className="mx-auto max-w-md px-6 pt-32">
         {profile.avatar && (
-          <img
+          <Image
             src={profile.avatar}
             alt="avatar"
             className="mb-6 h-24 w-24 rounded-full object-cover"
@@ -33,14 +35,14 @@ export default async function ProfilePage({ params }) {
 
         <div className="flex flex-col space-y-4">
           {links?.map((link) => (
-            <a
+            <Link
               key={link.id}
               href={link.url}
               target="_blank"
               className="block border-b border-neutral-800 py-4 transition hover:translate-x-1"
             >
               {link.title}
-            </a>
+            </Link>
           ))}
         </div>
 
