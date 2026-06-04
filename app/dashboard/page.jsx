@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function Dashboard() {
@@ -12,13 +13,13 @@ export default function Dashboard() {
 
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  const [avatar, setAvatar] = useState(null);
+  // const [avatar, setAvatar] = useState(null);
 
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     loadProfile();
-  }, [isLoaded]);
+  });
 
   async function loadProfile() {
     if (!user) return;
@@ -57,7 +58,7 @@ export default function Dashboard() {
           url,
         })
         .eq("id", editingId);
-      console.error;
+      console.error(error);
       setEditingId(null);
     } else {
       await supabase.from("links").insert([
@@ -145,7 +146,7 @@ export default function Dashboard() {
     <main className="mx-auto max-w-xl p-10">
       <div className="mb-8">
         {profile?.avatar && (
-          <img
+          <Image
             src={profile.avatar}
             alt="avatar"
             className="mb-4 h-20 w-20 rounded-full object-cover"
@@ -172,7 +173,7 @@ export default function Dashboard() {
         onChange={(e) => setUrl(e.target.value)}
       />
 
-      <button onClick={saveLink} className="mb-10 border px-5 py-2">
+      <button type="button" onClick={saveLink} className="mb-10 border px-5 py-2">
         {editingId ? "Update" : "Add"}
       </button>
 
@@ -185,9 +186,13 @@ export default function Dashboard() {
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => editLink(link)}>edit</button>
+              <button type="button" onClick={() => editLink(link)}>
+                edit
+              </button>
 
-              <button onClick={() => deleteLink(link.id)}>delete</button>
+              <button type="button" onClick={() => deleteLink(link.id)}>
+                delete
+              </button>
             </div>
           </div>
         ))}

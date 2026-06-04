@@ -1,5 +1,4 @@
-import React from "react";
-import { ArrowUpRight, ArrowRight, CornerDownRight, Command } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CornerDownRight } from "lucide-react";
 import Link from "next/link";
 
 export default function MonoLandingRefined() {
@@ -61,9 +60,9 @@ export default function MonoLandingRefined() {
             </div>
 
             <div className="my-auto w-full space-y-4">
-              {["instagram", "facebook", "github"].map((item, idx) => (
+              {["instagram", "facebook", "github"].map((item) => (
                 <div
-                  key={idx}
+                  key={item}
                   className="flex w-full cursor-pointer items-center justify-between border-b border-white pb-2 text-[10px] font-light tracking-[0.25em] uppercase transition-opacity hover:opacity-80"
                 >
                   <div className="flex items-center gap-1.5">
