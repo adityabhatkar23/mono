@@ -147,6 +147,9 @@ export default function Dashboard() {
       <div className="mb-8">
         {profile?.avatar && (
           <Image
+            width={200}
+            height={200}
+            hostname="profile"
             src={profile.avatar}
             alt="avatar"
             className="mb-4 h-20 w-20 rounded-full object-cover"
