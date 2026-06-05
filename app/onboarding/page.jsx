@@ -1,63 +1,82 @@
 "use client";
-
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function Onboarding() {
-	const { user } = useUser();
-	const router = useRouter();
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
 
-	const [username, setUsername] = useState("");
-	const [name, setName] = useState("");
-	const [bio, setBio] = useState("");
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [checking, setChecking] = useState(true);
 
-	async function saveProfile() {
-		if (!user) return;
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) {
+      router.replace("/sign-in");
+      return;
+    }
 
-		const { error } = await supabase.from("profiles").insert([
-			{
-				user_id: user.id,
-				username,
-				name,
-				bio,
-			},
-		]);
+    async function checkProfile() {
+      const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
 
-		if (error) {
-			alert(error.message);
-			return;
-		}
+      if (data) {
+        router.replace("/dashboard");
+      } else {
+        setChecking(false);
+      }
+    }
 
-		router.push(`/${username}`);
-	}
+    checkProfile();
+  }, [isLoaded, user, router]);
 
-	return (
-		<div className="mx-auto max-w-md p-10">
-			<h1 className="mb-6 text-3xl">create profile</h1>
+  async function saveProfile() {
+    if (!user) return;
 
-			<input
-				placeholder="username"
-				className="mb-4 w-full border p-2"
-				onChange={(e) => setUsername(e.target.value)}
-			/>
+    const { error } = await supabase
+      .from("profiles")
+      .insert([{ user_id: user.id, username, name, bio }]);
 
-			<input
-				placeholder="name"
-				className="mb-4 w-full border p-2"
-				onChange={(e) => setName(e.target.value)}
-			/>
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
-			<textarea
-				placeholder="bio"
-				className="mb-4 w-full border p-2"
-				onChange={(e) => setBio(e.target.value)}
-			/>
+    router.push(`/${username}`);
+  }
 
-			<button type="button" onClick={saveProfile} className="border px-4 py-2">
-				create
-			</button>
-		</div>
-	);
+  if (!isLoaded || checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black text-white">
+        loading...
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-md p-10">
+      <h1 className="mb-6 text-3xl">create profile</h1>
+      <input
+        placeholder="username"
+        className="mb-4 w-full border p-2"
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <input
+        placeholder="name"
+        className="mb-4 w-full border p-2"
+        onChange={(e) => setName(e.target.value)}
+      />
+      <textarea
+        placeholder="bio"
+        className="mb-4 w-full border p-2"
+        onChange={(e) => setBio(e.target.value)}
+      />
+      <button type="button" onClick={saveProfile} className="border px-4 py-2">
+        create
+      </button>
+    </div>
+  );
 }
