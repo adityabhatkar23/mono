@@ -13,42 +13,55 @@ export default function Dashboard() {
 
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  // const [avatar, setAvatar] = useState(null);
-
   const [editingId, setEditingId] = useState(null);
 
-  useEffect(() => {
-    loadProfile();
-  });
-
-  async function loadProfile() {
-    if (!user) return;
-
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
-
-    setProfile(profileData);
-
-    if (profileData) {
-      loadLinks(profileData.id);
-    }
-  }
-
   async function loadLinks(profileId) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("links")
       .select("*")
       .eq("profile_id", profileId)
       .order("created_at");
 
+    if (error) {
+      console.error(error);
+      return;
+    }
+
     setLinks(data || []);
   }
 
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+
+    async function loadProfile() {
+      const { data: profileData, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setProfile(profileData);
+
+      if (profileData) {
+        await loadLinks(profileData.id);
+      }
+    }
+
+    loadProfile();
+  }, [isLoaded, user]);
+
   async function saveLink() {
     if (!profile) return;
+
+    if (!title.trim() || !url.trim()) {
+      alert("Please fill in both title and URL");
+      return;
+    }
 
     if (editingId) {
       const { error } = await supabase
@@ -58,22 +71,32 @@ export default function Dashboard() {
           url,
         })
         .eq("id", editingId);
-      console.error(error);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
       setEditingId(null);
     } else {
-      await supabase.from("links").insert([
+      const { error } = await supabase.from("links").insert([
         {
           profile_id: profile.id,
           title,
           url,
         },
       ]);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
     }
 
     setTitle("");
     setUrl("");
 
-    loadLinks(profile.id);
+    await loadLinks(profile.id);
   }
 
   async function deleteLink(id) {
@@ -81,9 +104,12 @@ export default function Dashboard() {
 
     if (error) {
       console.error("Error deleting link:", error);
+      return;
     }
 
-    loadLinks(profile.id);
+    if (profile) {
+      await loadLinks(profile.id);
+    }
   }
 
   function editLink(link) {
@@ -92,54 +118,48 @@ export default function Dashboard() {
     setUrl(link.url);
   }
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
-
   async function uploadAvatar(e) {
-    const file = e.target.files[0];
+    if (!isLoaded || !user || !profile) return;
 
-    if (!file || !profile) return;
+    const file = e.target.files?.[0];
+
+    if (!file) return;
 
     const fileName = `${profile.id}-${Date.now()}`;
 
     const { error } = await supabase.storage.from("avatars").upload(fileName, file);
 
     if (error) {
-      console.log(error);
+      console.error(error);
       alert(error.message);
       return;
     }
 
     const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${fileName}`;
 
-    const { data, error: updateError } = await supabase
+    const { error: updateError } = await supabase
       .from("profiles")
       .update({
         avatar: imageUrl,
       })
-      .eq("id", profile.id)
-      .select();
-
-    console.log("Updated profile:", data);
-    console.log("Update error:", updateError);
+      .eq("id", profile.id);
 
     if (updateError) {
+      console.error(updateError);
       alert(updateError.message);
       return;
     }
 
-    if (updateError) {
-      console.log(updateError);
-      return;
-    }
-
-    setProfile({
-      ...profile,
+    setProfile((prev) => ({
+      ...prev,
       avatar: imageUrl,
-    });
+    }));
 
-    alert("uploaded");
+    alert("Avatar uploaded successfully");
+  }
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -149,7 +169,6 @@ export default function Dashboard() {
           <Image
             width={200}
             height={200}
-            hostname="profile"
             src={profile.avatar}
             alt="avatar"
             className="mb-4 h-20 w-20 rounded-full object-cover"
@@ -158,9 +177,8 @@ export default function Dashboard() {
 
         <input type="file" accept="image/*" onChange={uploadAvatar} className="block" />
       </div>
-      <h1 className="mb-10 text-4xl">Manage Links</h1>
 
-      <input type="file" accept="image/*" onChange={uploadAvatar} className="mb-6" />
+      <h1 className="mb-10 text-4xl">Manage Links</h1>
 
       <input
         value={title}
@@ -190,11 +208,11 @@ export default function Dashboard() {
 
             <div className="flex gap-3">
               <button type="button" onClick={() => editLink(link)}>
-                edit
+                Edit
               </button>
 
               <button type="button" onClick={() => deleteLink(link.id)}>
-                delete
+                Delete
               </button>
             </div>
           </div>
