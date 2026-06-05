@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   async function loadLinks(profileId) {
     const { data, error } = await supabase
@@ -56,6 +57,8 @@ export default function Dashboard() {
   }, [isLoaded, user]);
 
   async function saveLink() {
+    if (isSaving) return;
+
     if (!profile) return;
 
     if (!title.trim() || !url.trim()) {
@@ -63,40 +66,42 @@ export default function Dashboard() {
       return;
     }
 
-    if (editingId) {
-      const { error } = await supabase
-        .from("links")
-        .update({
-          title,
-          url,
-        })
-        .eq("id", editingId);
+    setIsSaving(true);
 
-      if (error) {
-        console.error(error);
-        return;
+    try {
+      if (editingId) {
+        const { error } = await supabase
+          .from("links")
+          .update({
+            title,
+            url,
+          })
+          .eq("id", editingId);
+
+        if (error) throw error;
+
+        setEditingId(null);
+      } else {
+        const { error } = await supabase.from("links").insert([
+          {
+            profile_id: profile.id,
+            title,
+            url,
+          },
+        ]);
+
+        if (error) throw error;
       }
 
-      setEditingId(null);
-    } else {
-      const { error } = await supabase.from("links").insert([
-        {
-          profile_id: profile.id,
-          title,
-          url,
-        },
-      ]);
+      setTitle("");
+      setUrl("");
 
-      if (error) {
-        console.error(error);
-        return;
-      }
+      await loadLinks(profile.id);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
     }
-
-    setTitle("");
-    setUrl("");
-
-    await loadLinks(profile.id);
   }
 
   async function deleteLink(id) {
@@ -194,8 +199,13 @@ export default function Dashboard() {
         onChange={(e) => setUrl(e.target.value)}
       />
 
-      <button type="button" onClick={saveLink} className="mb-10 border px-5 py-2">
-        {editingId ? "Update" : "Add"}
+      <button
+        type="button"
+        onClick={saveLink}
+        disabled={isSaving}
+        className="mb-10 border px-5 py-2 disabled:opacity-50"
+      >
+        {isSaving ? "Saving..." : editingId ? "Update" : "Add"}
       </button>
 
       <div className="space-y-4">
