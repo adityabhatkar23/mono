@@ -1,5 +1,6 @@
-import { ArrowRight, ArrowUpRight, CornerDownRight } from "lucide-react";
+import { ArrowUpRight, CornerDownRight } from "lucide-react";
 import Link from "next/link";
+import UsernameForm from "../components/Userform";
 
 export default function MonoLandingRefined() {
   return (
@@ -37,20 +38,7 @@ export default function MonoLandingRefined() {
             </p>
           </div>
 
-          <form action="/sign-up" method="GET" className="w-full max-w-sm">
-            <div className="group flex items-center border-b border-white py-2.5 transition-colors focus-within:border-white">
-              <span className="pr-0.5 text-sm font-light tracking-wider lowercase">mono.me/</span>
-              <input
-                type="text"
-                name="username"
-                placeholder="username"
-                className="w-full bg-black text-sm font-light tracking-[0.15em] text-white uppercase placeholder:opacity-50 focus:outline-none"
-              />
-              <button type="submit" className="pl-2 text-white transition-colors">
-                <ArrowRight size={15} strokeWidth={1.5} />
-              </button>
-            </div>
-          </form>
+          <UsernameForm />
         </div>
 
         <div className="flex w-full justify-center lg:w-1/2 lg:justify-end">

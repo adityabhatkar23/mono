@@ -8,7 +8,14 @@ export default function Onboarding() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("pending_username") || "";
+  });
+
+  useEffect(() => {
+    localStorage.removeItem("pending_username");
+  });
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [checking, setChecking] = useState(true);
@@ -60,6 +67,7 @@ export default function Onboarding() {
     <div className="mx-auto max-w-md p-10">
       <h1 className="mb-6 text-3xl">create profile</h1>
       <input
+        value={username}
         placeholder="username"
         className="mb-4 w-full border p-2"
         onChange={(e) => setUsername(e.target.value)}
