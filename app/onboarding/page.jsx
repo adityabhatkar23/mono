@@ -1,7 +1,7 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function Onboarding() {
@@ -12,13 +12,14 @@ export default function Onboarding() {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("pending_username") || "";
   });
-
-  useEffect(() => {
-    localStorage.removeItem("pending_username");
-  });
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [checking, setChecking] = useState(true);
+  const [usernameStatus, setUsernameStatus] = useState("idle");
+
+  useEffect(() => {
+    localStorage.removeItem("pending_username");
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -40,9 +41,25 @@ export default function Onboarding() {
     checkProfile();
   }, [isLoaded, user, router]);
 
-  async function saveProfile() {
-    if (!user) return;
+  const checkUsername = useCallback(async (value) => {
+    if (!value || value.length < 2) {
+      setUsernameStatus("idle");
+      return;
+    }
+    setUsernameStatus("checking");
+    const { data } = await supabase.from("profiles").select("id").eq("username", value).single();
+    setUsernameStatus(data ? "taken" : "available");
+  }, []);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      checkUsername(username);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [username, checkUsername]);
+
+  async function saveProfile() {
+    if (!user || usernameStatus !== "available") return;
     const { error } = await supabase
       .from("profiles")
       .insert([{ user_id: user.id, username, name, bio }]);
@@ -66,12 +83,21 @@ export default function Onboarding() {
   return (
     <div className="mx-auto max-w-md p-10">
       <h1 className="mb-6 text-3xl">create profile</h1>
-      <input
-        value={username}
-        placeholder="username"
-        className="mb-4 w-full border p-2"
-        onChange={(e) => setUsername(e.target.value)}
-      />
+
+      <div className="mb-4">
+        <input
+          value={username}
+          placeholder="username"
+          className="w-full border p-2"
+          onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+        />
+        <p className="mt-1 text-xs">
+          {usernameStatus === "checking" && <span className="text-neutral-500">checking...</span>}
+          {usernameStatus === "taken" && <span className="text-red-400">username taken</span>}
+          {usernameStatus === "available" && <span className="text-green-500">available</span>}
+        </p>
+      </div>
+
       <input
         placeholder="name"
         className="mb-4 w-full border p-2"
@@ -82,7 +108,12 @@ export default function Onboarding() {
         className="mb-4 w-full border p-2"
         onChange={(e) => setBio(e.target.value)}
       />
-      <button type="button" onClick={saveProfile} className="border px-4 py-2">
+      <button
+        type="button"
+        onClick={saveProfile}
+        disabled={usernameStatus !== "available"}
+        className="border px-4 py-2 disabled:opacity-30"
+      >
         create
       </button>
     </div>
