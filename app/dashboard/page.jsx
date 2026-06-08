@@ -103,14 +103,17 @@ export default function Dashboard() {
       setIsSaving(false);
     }
   }
-
+  const [deleteTarget, setDeleteTarget] = useState(null);
   async function deleteLink(id) {
-    const { error } = await supabase.from("links").delete().eq("id", id);
+    if (!deleteTarget) return;
+
+    const { error } = await supabase.from("links").delete().eq("id", deleteTarget);
 
     if (error) {
       console.error("Error deleting link:", error);
       return;
     }
+    setDeleteTarget(null);
 
     if (profile) {
       await loadLinks(profile.id);
@@ -221,13 +224,36 @@ export default function Dashboard() {
                 Edit
               </button>
 
-              <button type="button" onClick={() => deleteLink(link.id)}>
+              <button type="button" onClick={() => setDeleteTarget(link.id)}>
                 Delete
               </button>
             </div>
           </div>
         ))}
       </div>
+      {deleteTarget && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70">
+          <div className="w-full max-w-sm border border-neutral-800 bg-black p-8">
+            <p className="mb-6 text-sm text-neutral-400">delete this link?</p>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={deleteLink}
+                className="border border-neutral-800 px-4 py-2 text-sm text-white hover:border-neutral-600"
+              >
+                delete
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 text-sm text-neutral-600 hover:text-white"
+              >
+                cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
